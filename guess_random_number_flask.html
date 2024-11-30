@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Guess the Number</title>
+</head>
+<body>
+    <h1>Guess the Number Game</h1>
+    <div id="game">
+        <label for="playerId">Player ID:</label>
+        <input type="text" id="playerId">
+        <button onclick="startGame()">Start Game</button>
+        <div id="game-area" style="display:none;">
+            <input type="number" id="guess" placeholder="Enter your guess">
+            <button onclick="makeGuess()">Submit Guess</button>
+            <p id="feedback"></p>
+        </div>
+    </div>
+    <script>
+        let playerId;
+        const apiUrl = "https://your-api-endpoint"; // Replace with your backend URL
+
+        async function startGame() {
+            playerId = document.getElementById('playerId').value;
+            const response = await fetch(`${apiUrl}/start-game`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ player_id: playerId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('game-area').style.display = 'block';
+                document.getElementById('feedback').innerText = "Game started!";
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function makeGuess() {
+            const guess = parseInt(document.getElementById('guess').value);
+            const response = await fetch(`${apiUrl}/make-guess`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ player_id: playerId, guess: guess })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (data.message) {
+                    document.getElementById('feedback').innerText = `You won! Guesses: ${data.num_guesses}`;
+                } else {
+                    document.getElementById('feedback').innerText = data.hint;
+                }
+            } else {
+                alert(data.error);
+            }
+        }
+    </script>
+</body>
+</html>
